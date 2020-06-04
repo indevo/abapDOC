@@ -1,0 +1,224 @@
+
+
+html {
+  scroll-padding-top: 70px; /* height of sticky header */
+}
+
+body {
+  font-family: Arial;
+  font-size: 15px;
+  margin: 0;
+}
+
+header {
+	height: 60px;
+}
+
+footer {
+	font-size: 12px;
+	padding: 20px;
+}
+
+nav {
+	position: fixed;
+	width: 100%;
+	z-index: 999;
+	background-color: #e0e0e0;
+	padding-left: 10px;
+}
+
+main {
+	padding: 20px;
+}
+
+section {
+	margin-top: 30px;
+	background-color: #f8f8f8;
+	padding: 20px;
+}
+
+h1 {
+	font-size: 18px; 
+}
+
+h2 {
+	margin-bottom: 25px;
+	font-style: italic;
+	font-size: 16px; 
+}
+
+h3 {
+	font-size: 13px; 
+}
+
+
+code {
+	font-family: 'DejaVu Sans Mono', monospace;
+	font-size: 14px;
+	padding-top: 4px;
+	margin-top: 8px;
+	line-height: 1.4em;	
+}
+
+a:link, a:visited {
+    text-decoration: none;
+    color: #4A6782;
+}
+
+a[href]:hover, a[href]:focus {
+    text-decoration:none;
+    color:#bb7a2a;
+}
+
+
+table {
+	border-collapse: collapse;	
+}
+
+caption {
+	margin: 0;
+	font-weight: bold;
+}
+
+caption span {
+	padding: 5px 8px 8px 5px;
+	background-color: #F8981D;
+	float: left;	
+}
+
+th {
+	padding-left: 5px;
+	padding-right: 5px;
+	background: #e0e0e0;
+	font-weight: bold;
+	text-align: left;	
+}
+
+tr {
+	height: 30px;
+}
+
+th.sectionHeader {
+	height: 40px;
+	background-color: #f8f8f8;
+	vertical-align: bottom;
+	padding-bottom: 5px;
+}
+
+tr:nth-child(odd) { 
+	background-color: #f2f2f2;
+}
+
+tr:nth-child(even) { 
+	background-color: white;
+}
+
+tbody.section::before {
+  height: 1em;
+  display: table-row;
+  content: "";
+}
+
+td {
+	margin: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+td.description {
+	width: 60%;
+}
+
+td a:link {
+	font-weight: bold;	
+}
+
+ul.navList {
+	float: left;
+	padding: 0px;
+	margin: 15px 25px 15px 0;
+	list-style: none;
+	text-transform: uppercase;
+}
+
+ul.navList li {
+	float: left;	
+}
+
+ul.memberList {
+	background-color: white;
+	list-style: none;
+	margin-bottom: 15px;
+	padding: 0;
+}
+
+ul.memberList h3 {
+	background-color: #e0e0e0;
+	padding: 5px;
+	margin: 0;
+}
+
+dl {
+	margin-top: 10px;
+}
+
+dt {
+	font-weight: bold;	
+}
+
+dt.compact {
+	margin-right: 5px;
+	float: left;	
+}
+
+dd {
+	margin: 5px 0 10px 0;	
+}
+
+.memberDetail {
+	padding: 8px 5px;
+}
+
+.subtitle {
+	
+}
+
+.label {
+	font-weight: bold;
+}
+
+.memberSummary {
+	width: 100%;
+}
+
+.third {
+	width: 33%;
+}
+
+.half {
+	width: 50%;
+}
+
+.includeField {
+  font-style: italic;
+  color: gray;
+}
+
+.timestamp {
+	float: right;
+}
+
+
+ul.inheritance {
+	margin: 0;
+	padding: 0;
+	list-style: none;	
+}
+
+ul.inheritance li ul.inheritance {
+    margin-left: 15px;
+    padding-left: 15px;
+    padding-top: 1px;
+}

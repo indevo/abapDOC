@@ -1,0 +1,1005 @@
+<?xml version="1.0"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xslt"
+  exclude-result-prefixes="#default xalan" version="1.0">
+  <xsl:output doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+    doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" indent="yes" method="html" xalan:indent-amount="2" encoding="utf-8"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:variable name="thisType" select="ABAP_DOC/OBJECTS/*/HEADER/NAME"/>
+
+  <xsl:template match="/">
+
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+      <head>
+        <title>	<xsl:value-of select="ABAP_DOC/TITLE" /></title>
+        <link href="../abapdoc-j.css" rel="stylesheet" type="text/css" />
+      </head>
+      <body>
+        <xsl:apply-templates />
+        <footer>Generated with <b>abapDOC</b> by <a href="https://indevo.pl" target="_blank">indevo</a>
+        <div class="timestamp"><xsl:value-of select="ABAP_DOC/TIMESTAMP"/></div>
+        </footer>
+      </body>
+    </html>
+  </xsl:template>
+
+  <!-- Package Summary -->
+  <xsl:template match="ABAP_DOC[TYPE='INDEX']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#types">&#160;Types</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>Package <xsl:value-of select="PACKAGE" /></h1>
+      <section>
+        <a id="types">
+          <h2>Object Types</h2>
+        </a>
+        <table class="memberSummary third">
+          <tr>
+            <th>Object Type</th>
+            <th>Number of Objects</th>
+          </tr>
+          <xsl:for-each select="INDEX/TYPES/item">
+          <xsl:variable name="objType" select="NAME"/>
+          <tr>
+            <td><a href="#{$objType}"><xsl:value-of select="DESCRIPTION"/></a></td>
+            <td><xsl:value-of select="count(/ABAP_DOC/INDEX/OBJECTS/item[OBJ_TYPE=$objType])"/></td>
+          </tr>
+          </xsl:for-each>
+        </table>
+      </section>
+      <xsl:for-each select="INDEX/TYPES/item">
+      <xsl:variable name="objType" select="NAME"/>
+      <section>
+        <a id="{NAME}">
+          <h2><xsl:value-of select="DESCRIPTION"/></h2>
+        </a>
+        <table class="memberSummary half">
+          <tr>
+            <th>Object Name</th>
+            <th>Description</th>
+          </tr>
+          <xsl:for-each select="/ABAP_DOC/INDEX/OBJECTS/item[OBJ_TYPE=$objType]">
+          <tr>
+            <td>
+              <a>
+                <xsl:attribute name="href">
+                <xsl:choose>
+                  <xsl:when test="DOC_SECTION"><xsl:value-of select="DOC_NAME"/>.html#<xsl:value-of select="DOC_SECTION"/></xsl:when>
+                  <xsl:otherwise><xsl:value-of select="DOC_NAME"/>.html</xsl:otherwise>
+                </xsl:choose>
+                </xsl:attribute>
+            <xsl:value-of select="NAME"/></a></td>
+            <td><xsl:value-of select="DESCRIPTION"/></td>
+          </tr>
+          </xsl:for-each>
+        </table>
+      </section>
+      </xsl:for-each>
+    </main>
+  </xsl:template>
+
+  <!-- Class/Interface -->
+  <xsl:template match="ABAP_DOC[TYPE='CLAS.SINGLE' or TYPE='INTF.SINGLE']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SUMMARY: </li>
+          <li><a href="#methods.summary">&#160;Methods |</a></li>
+          <li><a href="#attributes.summary">&#160;Attributes |</a></li>
+          <li><a href="#events.summary">&#160;Events</a></li>
+        </ul>
+        <ul class="navList">
+          <li>DETAIL: </li>
+          <li><a href="#methods.detail">&#160;Methods |</a></li>
+          <li><a href="#attributes.detail">&#160;Attributes |</a></li>
+          <li><a href="#events.detail">&#160;Events</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <xsl:apply-templates select="OBJECTS" />
+    </xsl:template>
+
+    <xsl:template match="CLAS|INTF">
+    <main>
+      <xsl:if test="HEADER/OBJ_TYPE='CLAS'">
+      <h1>Class <xsl:value-of select="HEADER/NAME" /></h1>
+      </xsl:if>
+      <xsl:if test="HEADER/OBJ_TYPE='INTF'">
+      <h1>Interface <xsl:value-of select="HEADER/NAME" /></h1>
+      </xsl:if>
+
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="HEADER/PACKAGE" /></a>
+      </div>
+      <dl>
+        <xsl:apply-templates select="INHERITANCE" />
+        <xsl:if test="INTERFACES">
+        <dt>Included interfaces</dt>
+        <dd>
+        <xsl:for-each select="INTERFACES/item">
+        <code><xsl:value-of select="NAME" /><xsl:if test="position() &lt; last()">, </xsl:if></code>
+        </xsl:for-each>
+        </dd>
+        </xsl:if>
+      </dl>
+      <p><xsl:value-of select="HEADER/DESCRIPTION" /></p>
+      <xsl:apply-templates select="METHODS" mode="Summary" />
+   	  <xsl:apply-templates select="ATTRIBUTES" mode="Summary" />
+      <xsl:apply-templates select="EVENTS" mode="Summary" />
+      <xsl:apply-templates select="METHODS"/>
+      <xsl:apply-templates select="ATTRIBUTES"/>
+      <xsl:apply-templates select="EVENTS"/>
+    </main>
+  </xsl:template>
+
+  <xsl:template match="INHERITANCE">
+    <dt>Inheritance Hierarchy</dt>
+    <dd>
+      <xsl:apply-templates select="item[position()=last()]" />
+    </dd>
+  </xsl:template>
+
+  <xsl:template match="INHERITANCE/item">
+      <ul class="inheritance">
+      <li><code><xsl:value-of select="SUPER_CLASS" /></code>
+      <xsl:choose>
+       <xsl:when test="LEVEL>1"><xsl:apply-templates select="preceding-sibling::item[1]"/></xsl:when>
+       <xsl:otherwise>
+        <ul class="inheritance">
+          <li><code><xsl:value-of select="$thisType" /></code></li>
+        </ul>
+       </xsl:otherwise>
+      </xsl:choose>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <!-- Methods Summary -->
+  <xsl:template match="METHODS" mode="Summary">
+    <xsl:if test="item">
+    <xsl:variable name="methods" select="."/>
+    <section>
+      <a id="methods.summary">
+        <h2>Methods Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <caption><span>Methods</span></caption>
+
+      <xsl:call-template name="MethodsList">
+        <xsl:with-param name="source" select="$thisType"/>
+        <xsl:with-param name="methods" select="$methods/item[SOURCE=$thisType]"/>
+      </xsl:call-template>
+
+      <xsl:for-each select="../INHERITANCE/item">
+        <xsl:variable name="superType" select="SUPER_CLASS"/>
+        <xsl:call-template name="MethodsList">
+          <xsl:with-param name="source" select="$superType"/>
+          <xsl:with-param name="methods" select="$methods/item[SOURCE=$superType]"/>
+        </xsl:call-template>
+      </xsl:for-each>
+
+      <xsl:for-each select="../INTERFACES/item">
+        <xsl:variable name="superType" select="NAME"/>
+        <xsl:call-template name="MethodsList">
+          <xsl:with-param name="source" select="$superType"/>
+          <xsl:with-param name="methods" select="$methods/item[SOURCE=$superType]"/>
+        </xsl:call-template>
+      </xsl:for-each>
+
+      </table>
+    </section>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="MethodsList">
+    <xsl:param name="source"/>
+    <xsl:param name="methods"/>
+    <xsl:if test="$methods">
+    <tbody>
+      <xsl:if test="$source!=$thisType">
+      <tr>
+        <th colspan="4" class="sectionHeader">Methods inherited from <xsl:value-of select="$source" /></th>
+      </tr>
+      </xsl:if>
+      <tr>
+        <th>Visibility</th>
+        <th>Level</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+      <xsl:for-each select="$methods">
+        <tr>
+          <td><code><xsl:value-of select="VISIBILITY" /></code></td>
+          <td><code><xsl:value-of select="LEVEL" /></code></td>
+          <td><a href="#{NAME}"><xsl:value-of select="NAME" /></a></td>
+          <td class="description"><xsl:value-of select="DESCRIPTION" /></td>
+        </tr>
+      </xsl:for-each>
+    </tbody>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- Attributes Summary -->
+  <xsl:template match="ATTRIBUTES" mode="Summary">
+    <xsl:if test="item">
+    <xsl:variable name="attributes" select="." />
+    <section>
+      <a id="attributes.summary">
+        <h2>Attributes Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <caption><span>Attributes</span></caption>
+
+        <xsl:call-template name="AttributesList">
+          <xsl:with-param name="source" select="$thisType" />
+          <xsl:with-param name="attributes" select="$attributes/item[SOURCE=$thisType]" />
+        </xsl:call-template>
+
+        <xsl:for-each select="../INHERITANCE/item">
+          <xsl:variable name="superType" select="SUPER_CLASS" />
+          <xsl:call-template name="AttributesList">
+            <xsl:with-param name="source" select="$superType"/>
+            <xsl:with-param name="attributes" select="$attributes/item[SOURCE=$superType]" />
+          </xsl:call-template>
+        </xsl:for-each>
+
+      <xsl:for-each select="../INTERFACES/item">
+        <xsl:variable name="superType" select="NAME" />
+        <xsl:call-template name="AttributesList">
+          <xsl:with-param name="source" select="$superType"/>
+          <xsl:with-param name="attributes" select="$attributes/item[SOURCE=$superType]" />
+        </xsl:call-template>
+      </xsl:for-each>
+
+      </table>
+    </section>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="AttributesList">
+    <xsl:param name="source"/>
+    <xsl:param name="attributes"/>
+    <xsl:if test="$attributes">
+    <tbody>
+      <xsl:if test="$source!=$thisType">
+      <tr>
+        <th colspan="4" class="sectionHeader">Attributes inherited from <xsl:value-of select="$source" /></th>
+      </tr>
+      </xsl:if>
+      <tr>
+        <th>Visibility</th>
+        <th>Level</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+      <xsl:for-each select="$attributes">
+      <tr>
+        <td><code><xsl:value-of select="VISIBILITY" /></code></td>
+        <td><code><xsl:value-of select="LEVEL" /></code></td>
+        <td><a href="#{NAME}"><xsl:value-of select="NAME" /></a></td>
+        <td class="description"><xsl:value-of select="DESCRIPTION" /></td>
+      </tr>
+      </xsl:for-each>
+    </tbody>
+  </xsl:if>
+  </xsl:template>
+
+  <!-- Events Summary -->
+  <xsl:template match="EVENTS" mode="Summary">
+    <xsl:if test="item">
+    <xsl:variable name="events" select="."/>
+    <section>
+      <a id="events.summary">
+        <h2>Events Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <caption><span>Events</span></caption>
+
+        <xsl:call-template name="EventsList">
+          <xsl:with-param name="source" select="$thisType" />
+          <xsl:with-param name="events" select="$events/item[SOURCE=$thisType]" />
+        </xsl:call-template>
+
+        <xsl:for-each select="../INHERITANCE/item">
+          <xsl:variable name="superType" select="SUPER_CLASS"/>
+          <xsl:call-template name="EventsList">
+            <xsl:with-param name="source" select="$superType"/>
+            <xsl:with-param name="events" select="$events/item[SOURCE=$superType]" />
+          </xsl:call-template>
+        </xsl:for-each>
+
+      <xsl:for-each select="../INTERFACES/item">
+        <xsl:variable name="superType" select="NAME"/>
+        <xsl:call-template name="EventsList">
+          <xsl:with-param name="source" select="$superType"/>
+          <xsl:with-param name="events" select="$events/item[SOURCE=$superType]" />
+        </xsl:call-template>
+      </xsl:for-each>
+
+      </table>
+    </section>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="EventsList">
+    <xsl:param name="source" />
+    <xsl:param name="events" />
+    <xsl:if test="$events">
+    <tbody>
+      <xsl:if test="$source!=$thisType">
+      <tr>
+        <th colspan="4" class="sectionHeader">Events inherited from <xsl:value-of select="$source" /></th>
+      </tr>
+      </xsl:if>
+      <tr>
+        <th>Visibility</th>
+        <th>Level</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+      <xsl:for-each select="$events">
+      <tr>
+        <td><code><xsl:value-of select="VISIBILITY" /></code></td>
+        <td><code><xsl:value-of select="LEVEL" /></code></td>
+        <td><a href="#{NAME}"><xsl:value-of select="NAME" /></a></td>
+        <td class="description"><xsl:value-of select="DESCRIPTION" /></td>
+      </tr>
+      </xsl:for-each>
+    </tbody>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- Attributes -->
+  <xsl:template match="ATTRIBUTES">
+  <xsl:if test="item">
+    <section>
+      <a id="attributes.detail">
+        <h2>Attribute Detail</h2>
+      </a>
+      <xsl:apply-templates select="item" />
+    </section>
+  </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ATTRIBUTES/item">
+    <ul class="memberList">
+      <li>
+        <a id="{NAME}">
+          <h3><xsl:value-of select="NAME" /></h3>
+        </a>
+        <div class="memberDetail">
+        <pre><xsl:call-template name="AttributeDefinition" /></pre>
+        <xsl:value-of select="DESCRIPTION" />
+        </div>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <xsl:template name="AttributeDefinition">
+    <xsl:value-of select="VISIBILITY" />&#160;<xsl:value-of select="LEVEL" />&#160;<xsl:value-of select="NAME" />&#160;<xsl:value-of select="TYPING" />&#160;<xsl:value-of select="TYPE" />
+    <xsl:if test="VALUE"> VALUE <xsl:value-of select="VALUE" /></xsl:if>
+    <xsl:if test="READ_ONLY='true'"> READ-ONLY</xsl:if>
+  </xsl:template>
+
+  <xsl:template match="METHODS">
+  <xsl:if test="item">
+    <section>
+      <a id="methods.detail">
+        <h2>Method Detail</h2>
+      </a>
+      <xsl:apply-templates select="item" />
+    </section>
+  </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="METHODS/item">
+    <ul class="memberList">
+      <li>
+        <a id="{NAME}">
+          <h3><xsl:value-of select="NAME" /></h3>
+        </a>
+        <div class="memberDetail">
+          <xsl:call-template name="MethodSignature" />
+          <xsl:value-of select="DESCRIPTION" />
+          <dl>
+            <xsl:apply-templates select="PARAMETERS" />
+            <xsl:apply-templates select="EXCEPTIONS" />
+          </dl>
+        </div>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <xsl:template name="MethodSignature">
+    <pre><xsl:value-of select="VISIBILITY" />&#160;<xsl:value-of select="LEVEL" />
+    <xsl:if test="ABSTRACT='true'">&#160;Abstract</xsl:if>&#160;<xsl:value-of select="NAME" /></pre>
+  </xsl:template>
+
+  <xsl:template match="PARAMETERS">
+      <dt>Parameters</dt>
+      <xsl:apply-templates select="item" />
+  </xsl:template>
+
+  <xsl:template match="PARAMETERS/item">
+    <dd><xsl:value-of select="KIND" />&#160;<code><xsl:value-of select="NAME" /></code>&#160;<xsl:value-of select="TYPING" />&#160;
+    <xsl:if test="TYPE"><code><xsl:value-of select="TYPE" /></code></xsl:if>
+    <xsl:if test="OPTIONAL='true'"> OPTIONAL</xsl:if>
+    <xsl:if test="DEFAULT_VALUE"> DEFAULT <xsl:value-of select="DEFAULT_VALUE" /> </xsl:if>
+    <xsl:if test="DESCRIPTION"> - <xsl:value-of select="DESCRIPTION" />
+    </xsl:if>
+    </dd>
+  </xsl:template>
+
+  <xsl:template match="EXCEPTIONS">
+      <dt>Exceptions</dt>
+      <xsl:for-each select="item">
+        <dd><xsl:value-of select="NAME" /></dd>
+      </xsl:for-each>
+  </xsl:template>
+
+  <!-- Events -->
+  <xsl:template match="EVENTS">
+  <xsl:if test="item">
+    <section>
+      <a id="events.detail">
+        <h2>Event Detail</h2>
+      </a>
+      <xsl:apply-templates select="item" />
+    </section>
+  </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="EVENTS/item">
+
+    <ul class="memberList">
+      <li>
+        <a id="{NAME}">
+          <h3><xsl:value-of select="NAME" /></h3>
+        </a>
+        <div class="memberDetail">
+        <pre><xsl:value-of select="VISIBILITY" />&#160;<xsl:value-of select="LEVEL" />&#160;<xsl:value-of select="NAME" /></pre>
+        <xsl:value-of select="DESCRIPTION" />
+        <dl>
+          <xsl:apply-templates select="PARAMETERS" />
+        </dl>
+        </div>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <!-- Function Groups -->
+  <xsl:template match="ABAP_DOC[TYPE='FUGR.SINGLE']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#functions.summary">&#160;SUMMARY |</a></li>
+          <li><a href="#functions.detail">&#160;DETAIL</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <xsl:apply-templates select="OBJECTS/FUGR"/>
+  </xsl:template>
+
+  <xsl:template match="FUGR">
+    <main>
+      <h1>Function Group <xsl:value-of select="HEADER/NAME" /></h1>
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="HEADER/PACKAGE" /></a>
+      </div>
+      <p><xsl:value-of select="HEADER/DESCRIPTION" /></p>
+      <xsl:apply-templates select="FUNCTIONS" mode="Summary" />
+      <xsl:apply-templates select="FUNCTIONS"/>
+    </main>
+  </xsl:template>
+
+  <!-- Functions -->
+  <xsl:template match="FUNCTIONS" mode="Summary">
+    <xsl:if test="item">
+    <section>
+      <a id="functions.summary">
+        <h2>Functions Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <caption><span>Functions</span></caption>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+        <xsl:for-each select="item">
+        <tr>
+          <td><a href="#{NAME}"><xsl:value-of select="NAME" /></a></td>
+          <td class="description"><xsl:value-of select="DESCRIPTION" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="FUNCTIONS">
+  <xsl:if test="item">
+    <section>
+      <a id="functions.detail">
+        <h2>Function Detail</h2>
+      </a>
+      <xsl:apply-templates select="item" />
+    </section>
+  </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="FUNCTIONS/item">
+    <ul class="memberList">
+      <li>
+        <a id="{NAME}">
+          <h3><xsl:value-of select="NAME" /></h3>
+        </a>
+        <div class="memberDetail">
+          <xsl:value-of select="DESCRIPTION" />
+          <dl>
+            <xsl:apply-templates select="PARAMETERS" />
+            <xsl:apply-templates select="EXCEPTIONS" />
+          </dl>
+        </div>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <!-- Tables -->
+  <xsl:template match="ABAP_DOC[TYPE='TABL.SINGLE']">
+    <xsl:apply-templates select="OBJECTS/TABL"/>
+  </xsl:template>
+
+  <xsl:template match="TABL[KIND='Transparent']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#table.fields">&#160;Fields |</a></li>
+          <li><a href="#table.technical">&#160;Technical Settings |</a></li>
+          <li><a href="#table.indexes.summary">&#160;Indexes |</a></li>
+          <li><a href="#table.indexes.detail">&#160;Indexes Detail</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>Table <xsl:value-of select="HEADER/NAME" /></h1>
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="HEADER/PACKAGE" /></a>
+      </div>
+      <dl>
+        <dt>Type</dt>
+        <dd><xsl:value-of select="KIND" /></dd>
+        <dt>Maintenance</dt>
+        <dd><xsl:value-of select="MAINTENANCE_TEXT"/></dd>
+      </dl>
+      <p><xsl:value-of select="HEADER/DESCRIPTION" /></p>
+      <xsl:apply-templates select="FIELDS" mode="Table" />
+      <xsl:apply-templates select="TECHNICAL"/>
+      <xsl:apply-templates select="INDEXES"/>
+    </main>
+  </xsl:template>
+
+  <xsl:template match="FIELDS" mode="Table">
+    <section>
+      <a id="table.fields">
+        <h2>Fields</h2>
+      </a>
+      <table class="memberSummary">
+        <tr>
+          <th>Name</th>
+          <th>Key</th>
+          <th>Not Null</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <xsl:for-each select="item">
+        <tr>
+          <xsl:if test="INCLUDE='true'">
+          <xsl:attribute name="class">includeField</xsl:attribute>
+          </xsl:if>
+          <td><xsl:value-of select="NAME" /></td>
+          <td><xsl:value-of select="IS_KEY" /></td>
+          <td><xsl:value-of select="NOT_NULL" /></td>
+          <td><xsl:value-of select="TYPE" /></td>
+          <td><xsl:value-of select="DESCRIPTION" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+  </xsl:template>
+
+  <xsl:template match="TECHNICAL">
+    <section>
+      <a id="table.technical">
+        <h2>Technical Settings</h2>
+      </a>
+      <dl>
+        <dt>Data class</dt>
+        <dd><xsl:value-of select="DATA_CLASS"/></dd>
+        <dt>Size Category</dt>
+        <dd>
+        <xsl:choose>
+          <xsl:when test="SIZE_CATEGORY"><xsl:value-of select="SIZE_CATEGORY"/></xsl:when>
+          <xsl:otherwise>0</xsl:otherwise>
+        </xsl:choose>
+        </dd>
+        <dt>Buffering</dt>
+        <dd><xsl:value-of select="BUFFERING_TEXT"/></dd>
+        <dt>Change log</dt>
+        <dd>
+        <xsl:choose>
+          <xsl:when test="CHANGE_LOG">Enabled</xsl:when>
+          <xsl:otherwise>Disabled</xsl:otherwise>
+        </xsl:choose>
+        </dd>
+      </dl>
+    </section>
+  </xsl:template>
+
+  <xsl:template match="INDEXES">
+    <section>
+      <a id="table.indexes.summary">
+        <h2>Indexes</h2>
+      </a>
+      <table class="memberSummary">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>DB Index Name</th>
+        </tr>
+        <xsl:for-each select="item">
+        <tr>
+          <td><a href="#index.{NAME}"><xsl:value-of select="NAME" /></a></td>
+          <td><xsl:value-of select="DESCRIPTION" /></td>
+          <td><xsl:value-of select="STATUS_TEXT" /></td>
+          <td><xsl:value-of select="DB_INDEX_NAME" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+    <section>
+      <a id="table.indexes.detail">
+        <h2>Indexes Detail</h2>
+      </a>
+    <xsl:apply-templates select="item" />
+    </section>
+  </xsl:template>
+
+  <xsl:template match="INDEXES/item">
+    <ul class="memberList">
+      <li>
+        <a id="index.{NAME}">
+          <h3><xsl:value-of select="NAME" /></h3>
+        </a>
+        <div class="memberDetail third">
+          <dl>
+            <dt class="compact">Status</dt>
+            <dd><xsl:value-of select="STATUS_TEXT" /></dd>
+            <dt class="compact">Status on the database</dt>
+            <dd><xsl:value-of select="DB_STATUS_TEXT" /></dd>
+            <dt class="compact">Unique</dt>
+            <xsl:choose>
+            <xsl:when test="UNIQUE='true'">
+            <dd><xsl:value-of select="UNIQUE" /></dd>
+            </xsl:when>
+            <xsl:otherwise>
+            <dd>false</dd>
+            </xsl:otherwise>
+            </xsl:choose>
+          </dl>
+          <p>List of index fields:</p>
+          <table class="memberSummary">
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+            <xsl:for-each select="FIELDS/item">
+            <tr>
+              <td><xsl:value-of select="NAME" /></td>
+              <td><xsl:value-of select="DESCRIPTION" /></td>
+            </tr>
+            </xsl:for-each>
+          </table>
+        </div>
+      </li>
+    </ul>
+  </xsl:template>
+
+  <!-- Structure -->
+  <xsl:template match="TABL[KIND='Structure']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#table.fields">&#160;Components</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>Table <xsl:value-of select="HEADER/NAME" /></h1>
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="HEADER/PACKAGE" /></a>
+      </div>
+      <dl>
+        <dt>Type</dt>
+        <dd><xsl:value-of select="KIND" /></dd>
+        <dt>Maintenance</dt>
+        <dd><xsl:value-of select="MAINTENANCE_TEXT"/></dd>
+      </dl>
+      <p><xsl:value-of select="HEADER/DESCRIPTION" /></p>
+      <xsl:apply-templates select="FIELDS" mode="Structure" />
+    </main>
+  </xsl:template>
+
+    <xsl:template match="FIELDS" mode="Structure">
+    <section>
+      <a id="table.fields">
+        <h2>Components</h2>
+      </a>
+      <table class="memberSummary">
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <xsl:for-each select="item">
+        <tr>
+          <xsl:if test="INCLUDE='true'">
+          <xsl:attribute name="class">includeField</xsl:attribute>
+          </xsl:if>
+          <td><xsl:value-of select="NAME" /></td>
+          <td><xsl:value-of select="TYPE" /></td>
+          <td><xsl:value-of select="DESCRIPTION" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+  </xsl:template>
+
+  <!-- Domain -->
+  <xsl:template match="ABAP_DOC[TYPE='DOMA.MULTI']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#doma.summary">&#160;SUMMARY |</a></li>
+          <li><a href="#doma.detail">&#160;DETAIL</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>Domains</h1>
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="PACKAGE" /></a>
+      </div>
+      <xsl:call-template name="DomainsSummary" />
+      <xsl:call-template name="DomainsDetail" />
+    </main>
+  </xsl:template>
+
+  <xsl:template name="DomainsSummary">
+    <section>
+      <a id="doma.summary">
+        <h2>Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Length</th>
+          <th>Description</th>
+        </tr>
+        <xsl:for-each select="OBJECTS/DOMA">
+        <tr>
+          <td><a href="#{HEADER/NAME}"><xsl:value-of select="HEADER/NAME" /></a></td>
+          <td><xsl:value-of select="TYPE" /></td>
+          <td><xsl:value-of select="LENGTH" /></td>
+          <td><xsl:value-of select="HEADER/DESCRIPTION" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+  </xsl:template>
+
+  <xsl:template name="DomainsDetail">
+    <section>
+      <a id="doma.detail">
+        <h2>Detail</h2>
+      </a>
+      <xsl:for-each select="OBJECTS/DOMA">
+      <ul class="memberList">
+        <li>
+          <a id="{HEADER/NAME}">
+            <h3><xsl:value-of select="HEADER/NAME" /></h3>
+          </a>
+          <div class="memberDetail">
+            <xsl:value-of select="HEADER/DESCRIPTION" />
+            <dl>
+              <dt class="compact">Type</dt>
+              <dd><xsl:value-of select="TYPE" /></dd>
+              <dt class="compact">Length</dt>
+              <dd><xsl:value-of select="LENGTH" /></dd>
+              <dt class="compact">Output Length</dt>
+              <dd><xsl:value-of select="OUTPUT_LENGTH" /></dd>
+              <dt class="compact">Sign</dt>
+              <xsl:choose>
+                <xsl:when test="SIGN"><dd><xsl:value-of select="SIGN" /></dd></xsl:when>
+                <xsl:otherwise><dd>false</dd></xsl:otherwise>
+              </xsl:choose>
+              <dt class="compact">Lowercase</dt>
+              <xsl:choose>
+                <xsl:when test="LOWERCASE"><dd><xsl:value-of select="LOWERCASE" /></dd></xsl:when>
+                <xsl:otherwise><dd>false</dd></xsl:otherwise>
+              </xsl:choose>
+            </dl>
+          <p>Value Range:</p>
+          <table class="memberSummary third">
+            <tr>
+              <th>Value </th>
+              <th>Description</th>
+            </tr>
+            <xsl:for-each select="VALUES/item">
+            <tr>
+              <td><xsl:value-of select="LOW" /></td>
+              <td><xsl:value-of select="DESCRIPTION" /></td>
+            </tr>
+            </xsl:for-each>
+          </table>
+          </div>
+        </li>
+      </ul>
+    </xsl:for-each>
+    </section>
+
+  </xsl:template>
+
+  <!-- Data Element -->
+  <xsl:template match="ABAP_DOC[TYPE='DTEL.MULTI']">
+    <header>
+      <nav>
+        <ul class="navList">
+          <li>SECTION: </li>
+          <li><a href="#dtel.summary">&#160;SUMMARY |</a></li>
+          <li><a href="#dtel.detail">&#160;DETAIL</a></li>
+        </ul>
+        <ul class="navList">
+          <li>Go to:</li>
+          <li><a href='index.html'>&#160;Package</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>Data Elements</h1>
+      <div class="subtitle">
+        <span class="label">Package </span>
+        <a href="index.html"><xsl:value-of select="PACKAGE" /></a>
+      </div>
+      <xsl:call-template name="DataElementsSummary" />
+      <xsl:call-template name="DataElementsDetail" />
+    </main>
+  </xsl:template>
+
+  <xsl:template name="DataElementsSummary">
+    <section>
+      <a id="dtel.summary">
+        <h2>Summary</h2>
+      </a>
+      <table class="memberSummary">
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <xsl:for-each select="OBJECTS/DTEL">
+        <tr>
+          <td><a href="#{HEADER/NAME}"><xsl:value-of select="HEADER/NAME" /></a></td>
+          <td><xsl:value-of select="TYPE" /></td>
+          <td><xsl:value-of select="HEADER/DESCRIPTION" /></td>
+        </tr>
+        </xsl:for-each>
+      </table>
+    </section>
+  </xsl:template>
+
+  <xsl:template name="DataElementsDetail">
+    <section>
+      <a id="dtel.detail">
+        <h2>Detail</h2>
+      </a>
+      <xsl:for-each select="OBJECTS/DTEL">
+      <ul class="memberList">
+        <li>
+          <a id="{HEADER/NAME}">
+            <h3><xsl:value-of select="HEADER/NAME" /></h3>
+          </a>
+          <div class="memberDetail">
+            <xsl:value-of select="HEADER/DESCRIPTION" />
+            <dl>
+              <dt class="compact">Type</dt>
+              <dd><xsl:value-of select="TYPE" /></dd>
+            </dl>
+          <p>Labels:</p>
+          <table class="memberSummary third">
+            <tr>
+              <th>Label </th>
+              <th>Text</th>
+              <th>Max Length</th>
+            </tr>
+            <tr>
+              <td>Short</td>
+              <td><xsl:value-of select="LABELS/SHORT/TEXT" /></td>
+              <td><xsl:value-of select="LABELS/SHORT/MAX_LENGTH" /></td>
+            </tr>
+            <tr>
+              <td>Medium</td>
+              <td><xsl:value-of select="LABELS/MEDIUM/TEXT" /></td>
+              <td><xsl:value-of select="LABELS/MEDIUM/MAX_LENGTH" /></td>
+            </tr>
+            <tr>
+              <td>Long</td>
+              <td><xsl:value-of select="LABELS/LONG/TEXT" /></td>
+              <td><xsl:value-of select="LABELS/LONG/MAX_LENGTH" /></td>
+            </tr>
+            <tr>
+              <td>Heading</td>
+              <td><xsl:value-of select="LABELS/HEADING/TEXT" /></td>
+              <td><xsl:value-of select="LABELS/HEADING/MAX_LENGTH" /></td>
+            </tr>
+          </table>
+          </div>
+        </li>
+      </ul>
+      </xsl:for-each>
+    </section>
+  </xsl:template>
+
+  <!-- Auxiliary Templates -->
+  <xsl:template name="NoLeadingZeros">
+    <xsl:param name="value" />
+
+    <xsl:choose>
+      <xsl:when test="starts-with($value, '0')">
+        <xsl:call-template name="NoLeadingZeros">
+          <xsl:with-param name="value" select="substring-after($value, '0')" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$value" />
+      </xsl:otherwise>
+    </xsl:choose>
+
+  </xsl:template>
+</xsl:stylesheet>
