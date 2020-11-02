@@ -2791,6 +2791,7 @@ CLASS lcl_html_doc_builder IMPLEMENTATION.
       lo_doc TYPE REF TO lcl_abap_doc,
       lo_xml TYPE REF TO lcl_xml_doc,
       lo_ex TYPE REF TO lcx_abap_doc_exception,
+      lo_xslt_ex TYPE REF TO cx_transformation_error,
       lv_path TYPE string,
       lv_xmlx TYPE xstring,
       lv_htmlx TYPE xstring.
@@ -2819,14 +2820,18 @@ CLASS lcl_html_doc_builder IMPLEMENTATION.
       lcl_frontend=>file_download( EXPORTING i_path = lv_path i_xstring = lv_xmlx ).
     ENDIF.
 
-    CALL TRANSFORMATION (xslt)
-      SOURCE XML lv_xmlx
-      RESULT XML lv_htmlx.
+    TRY.
+        CALL TRANSFORMATION (xslt)
+          SOURCE XML lv_xmlx
+          RESULT XML lv_htmlx.
+        "HTML
+        lv_path = get_doc_path( i_doc = lo_doc i_ext = '.html' ).
+        lcl_frontend=>file_download( EXPORTING i_path = lv_path i_xstring = lv_htmlx ).
+        log->add_success( i_object = lo_doc->get_name( ) i_msg = |Exported| ).
+      CATCH cx_transformation_error INTO lo_xslt_ex.
+        log->add_error( i_object = lo_doc->get_name( ) i_msg = |Transformation error: { lo_xslt_ex->get_text( ) }| ).
+    ENDTRY.
 
-    "HTML
-    lv_path = get_doc_path( i_doc = lo_doc i_ext = '.html' ).
-    lcl_frontend=>file_download( EXPORTING i_path = lv_path i_xstring = lv_htmlx ).
-    log->add_success( i_object = lo_doc->get_name( ) i_msg = |Exported| ).
   ENDMETHOD.
 
   METHOD generate_docs_aggregated.
